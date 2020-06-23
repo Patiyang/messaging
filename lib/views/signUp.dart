@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
 import 'package:messaging/services/auth.dart';
+import 'package:messaging/views/chatrooms.dart';
+import 'package:messaging/views/conversations.dart';
 import 'package:messaging/views/signIn.dart';
 
 class SignUp extends StatefulWidget {
@@ -10,7 +12,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  AuthMethods _authMethods;
+  AuthMethods _authMethods = AuthMethods();
   bool loading = false;
   TextEditingController username = new TextEditingController();
   TextEditingController email = new TextEditingController();
@@ -125,7 +127,7 @@ class _SignUpState extends State<SignUp> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => SignIn()));
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SignIn()));
                           },
                           child: Text(
                             'Sign In',
@@ -158,6 +160,11 @@ class _SignUpState extends State<SignUp> {
     if (formKey.currentState.validate()) {
       _authMethods.signUp(email.text, password.text).then((val) {
         print(val);
+        Navigator.push(context, MaterialPageRoute(builder: (_) => ChatRooms()));
+      });
+      setState(() {
+        formKey.currentState.reset();
+        loading = false;
       });
     }
   }

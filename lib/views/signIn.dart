@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
+import 'package:messaging/views/chatrooms.dart';
 import 'package:messaging/views/signUp.dart';
 
 class SignIn extends StatefulWidget {
@@ -20,7 +21,7 @@ class _SignInState extends State<SignIn> {
         alignment: Alignment.bottomCenter,
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: SingleChildScrollView(
-                  child: Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(style: formTextStyle(), decoration: textFields('email')),
@@ -39,7 +40,7 @@ class _SignInState extends State<SignIn> {
               SizedBox(height: 10),
               Container(
                   child: button('Sign In', Colors.blueAccent, context, () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => SignUp()));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
               })),
               SizedBox(height: 10),
               Container(child: button('Sign In With Google', Colors.white, context, () {})),
@@ -47,7 +48,14 @@ class _SignInState extends State<SignIn> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text('Register Now', style: hint.copyWith(fontSize: 17,color: Colors.white,decoration: TextDecoration.underline),)
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SignUp()));
+                      },
+                      child: Text(
+                        'Register Now',
+                        style: hint.copyWith(fontSize: 17, color: Colors.white, decoration: TextDecoration.underline),
+                      ))
                 ],
               )
             ],
