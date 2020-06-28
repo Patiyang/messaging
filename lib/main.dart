@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:messaging/helperWidgets/styling.dart';
-import 'package:messaging/views/signIn.dart';
-import 'package:messaging/views/signUp.dart';
+
+import 'helperWidgets/styling.dart';
+import 'views/signIn.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,10 +13,10 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         appBarTheme: AppBarTheme(color: Colors.grey[800]),
-        scaffoldBackgroundColor: Colors.blueGrey[700],
+        scaffoldBackgroundColor: greyColor,
         primarySwatch: Colors.blue,
       ),
-      home: SignUp(),
+      home: SignIn(),
     );
   }
 }

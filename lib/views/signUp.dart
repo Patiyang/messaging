@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
 import 'package:messaging/services/auth.dart';
+import 'package:messaging/services/database.dart';
 import 'package:messaging/views/chatrooms.dart';
-import 'package:messaging/views/conversations.dart';
 import 'package:messaging/views/signIn.dart';
 
 class SignUp extends StatefulWidget {
@@ -13,8 +14,9 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   AuthMethods _authMethods = AuthMethods();
+  Database _database = new Database();
   bool loading = false;
-  TextEditingController username = new TextEditingController();
+  TextEditingController userName = new TextEditingController();
   TextEditingController email = new TextEditingController();
   TextEditingController password = new TextEditingController();
   TextEditingController confirmPassword = new TextEditingController();
@@ -44,7 +46,7 @@ class _SignUpState extends State<SignUp> {
                         }
                         return null;
                       },
-                      controller: username,
+                      controller: userName,
                       style: formTextStyle(),
                       decoration: textFields('username'),
                     ),
@@ -153,18 +155,14 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  signUpUser() {
+  signUpUser() async {
+    await _database.createUsers(userName.text, email.text, password.text);
     setState(() {
       loading = true;
     });
     if (formKey.currentState.validate()) {
       _authMethods.signUp(email.text, password.text).then((val) {
-        print(val);
-        Navigator.push(context, MaterialPageRoute(builder: (_) => ChatRooms()));
-      });
-      setState(() {
-        formKey.currentState.reset();
-        loading = false;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
       });
     }
   }
