@@ -33,7 +33,7 @@ class _ChatScreenState extends State<ChatRooms> {
             IconButton(
               icon: Icon(Icons.exit_to_app),
               onPressed: () {
-                _authMethods.signOut().then((_) => Navigator.push(context, MaterialPageRoute(builder: (_) => SignIn())));
+                _authMethods.signOut().then((_) => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SignIn())));
               },
             )
           ],

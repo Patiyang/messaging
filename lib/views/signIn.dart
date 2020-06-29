@@ -22,6 +22,7 @@ class _SignInState extends State<SignIn> {
   @override
   void initState() {
     super.initState();
+    isSignedIn();
   }
 
   void isSignedIn() async {
