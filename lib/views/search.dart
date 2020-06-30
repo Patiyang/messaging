@@ -5,6 +5,17 @@ import 'package:messaging/helperWidgets/styling.dart';
 import 'conversations.dart';
 
 class SearchUser extends SearchDelegate<String> {
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return theme.copyWith(accentIconTheme: IconThemeData(color: greyColor),
+      inputDecorationTheme: InputDecorationTheme(hintStyle: TextStyle(color: Colors.black)),
+      primaryColor: Colors.grey[400],
+      primaryIconTheme: IconThemeData(color: greyColor),
+      //  primaryColorBrightness: theme.primaryColorBrightness,
+      primaryTextTheme: theme.primaryTextTheme,
+    );
+  }
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -38,7 +49,7 @@ class SearchUser extends SearchDelegate<String> {
     String name = 'userName';
     Firestore _firestore = Firestore.instance;
     return StreamBuilder(
-      stream: _firestore.collection(users).where(name, isEqualTo: query).snapshots(),
+      stream: _firestore.collection(users).orderBy(name).startAt([query]).endAt([query + '\uf8ff']).snapshots(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -58,7 +69,7 @@ class SearchUser extends SearchDelegate<String> {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
               child: Material(
-                color: Colors.indigo[300],
+                color: Colors.grey[850],
                 borderRadius: BorderRadius.circular(8),
                 child: ListTile(
                   title: Column(
@@ -76,13 +87,13 @@ class SearchUser extends SearchDelegate<String> {
                     style: TextStyle(color: Colors.white),
                   ),
                   trailing: MaterialButton(
-                    textColor: Colors.white,
+                    textColor: greyColor,
                     child: Text('Message'),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
                     onPressed: () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatScreen(recipent: query,)));
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatScreen(recipent: userName)));
                     },
-                    color: greyColor,
+                    color: redColor,
                   ),
                 ),
               ),
