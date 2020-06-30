@@ -12,17 +12,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
+        primaryColor: Colors.white,
         cursorColor: Colors.white,
-        accentColor: greyColor,
-        appBarTheme: AppBarTheme(color: Colors.grey[800]),
-        scaffoldBackgroundColor: Colors.white54,
-        // primarySwatch: Colors.grey,
+        accentColor: Colors.white,
+        appBarTheme: AppBarTheme(textTheme: TextTheme(headline6: TextStyle(color: Colors.white) ),
+          iconTheme: IconThemeData(color: Colors.white),
+          color: greyColor,
+        ),
+        scaffoldBackgroundColor: Colors.grey[850],
       ),
       home: SignIn(),
     );
   }
 }
-
-
 
 // 139T3IXB

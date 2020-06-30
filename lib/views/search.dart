@@ -6,14 +6,17 @@ import 'conversations.dart';
 
 class SearchUser extends SearchDelegate<String> {
   @override
+  // TODO: implement searchFieldLabel
+  String get searchFieldLabel => 'Search by UserName';
+  @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return theme.copyWith(accentIconTheme: IconThemeData(color: greyColor),
-      inputDecorationTheme: InputDecorationTheme(hintStyle: TextStyle(color: Colors.black)),
-      primaryColor: Colors.grey[400],
-      primaryIconTheme: IconThemeData(color: greyColor),
-      //  primaryColorBrightness: theme.primaryColorBrightness,
-      primaryTextTheme: theme.primaryTextTheme,
+    return theme.copyWith(
+      accentIconTheme: IconThemeData(color: greyColor),
+      inputDecorationTheme: InputDecorationTheme(hintStyle: TextStyle(color: Colors.white)),
+      primaryColor: greyColor,
+      hintColor: Colors.yellow,
+      primaryIconTheme: IconThemeData(color: Colors.white),
     );
   }
 
@@ -69,7 +72,7 @@ class SearchUser extends SearchDelegate<String> {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
               child: Material(
-                color: Colors.grey[850],
+                color: greyColor,
                 borderRadius: BorderRadius.circular(8),
                 child: ListTile(
                   title: Column(

@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:messaging/helperFunctions/helperFunctions.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
+import 'package:messaging/services/auth.dart';
 import 'package:messaging/views/chatrooms.dart';
 import 'package:messaging/views/signUp.dart';
 
@@ -15,7 +18,10 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-
+  final emailController = new TextEditingController();
+  final passwordController = new TextEditingController();
+  AuthMethods _authMethods = new AuthMethods();
+  HelperFunctions _helperFunctions = new HelperFunctions();
   bool loading = false;
   bool isLoggedIn = false;
   bool hide = true;
@@ -59,11 +65,36 @@ class _SignInState extends State<SignIn> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     TextFormField(
-                      obscureText: true,
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (val) {
+                        if (val.isEmpty) {
+                          return 'Email Cannot be empty';
+                        }
+                        Pattern pattern =
+                            r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                        RegExp regex = new RegExp(pattern);
+                        if (!regex.hasMatch(val))
+                          return 'Please make sure your email address is valid';
+                        else
+                          return null;
+                      },
+                      // obscureText: true,
                       style: formTextStyle(),
                       decoration: textFields('email'),
                     ),
                     TextFormField(
+                      controller: passwordController,
+                      validator: (val) {
+                        if (val.isEmpty) {
+                          return 'this field cannot be left empty';
+                        }
+                        if (val.length < 6) {
+                          return 'the password length must be greather than 6';
+                        }
+
+                        return null;
+                      },
                       obscureText: true,
                       style: formTextStyle(),
                       decoration: textFields('password'),
@@ -82,7 +113,7 @@ class _SignInState extends State<SignIn> {
                     SizedBox(height: 10),
                     Container(
                         child: button('Sign In', Colors.blueAccent, context, () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
+                      signInUser();
                     })),
                     SizedBox(height: 10),
                     Container(child: button('Sign In With Google', Colors.white, context, () {})),
@@ -115,5 +146,23 @@ class _SignInState extends State<SignIn> {
         ],
       ),
     );
+  }
+
+  signInUser() {
+    HelperFunctions.saveEmail(emailController.text);
+
+    if (formKey.currentState.validate()) {
+      setState(() {
+        loading = true;
+      });
+      _authMethods.signIn(emailController.text, passwordController.text).then((value) {
+        if (value != null) {
+          HelperFunctions.saveUser(true);
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
+        } else {
+          Fluttertoast.showToast(msg: 'Wrong Email or Password');
+        }
+      }).catchError((e) => print(e.toString()));
+    }
   }
 }

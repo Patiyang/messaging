@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:messaging/helperFunctions/helperFunctions.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
 import 'package:messaging/services/auth.dart';
@@ -156,10 +157,14 @@ class _SignUpState extends State<SignUp> {
 
   signUpUser() async {
     await _database.createUsers(userName.text, email.text, password.text);
-    setState(() {
-      loading = true;
-    });
+    HelperFunctions.saveUser(true);
+
     if (formKey.currentState.validate()) {
+      setState(() {
+        loading = true;
+      });
+      HelperFunctions.saveUserName(userName.text);
+      HelperFunctions.saveEmail(email.text);
       _authMethods.signUp(email.text, password.text).then((val) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
       });
