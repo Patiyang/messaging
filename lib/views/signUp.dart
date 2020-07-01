@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:messaging/helperFunctions/helperFunctions.dart';
 import 'package:messaging/helperWidgets/styling.dart';
@@ -6,6 +7,7 @@ import 'package:messaging/services/auth.dart';
 import 'package:messaging/services/database.dart';
 import 'package:messaging/views/chatrooms.dart';
 import 'package:messaging/views/signIn.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -16,10 +18,12 @@ class _SignUpState extends State<SignUp> {
   AuthMethods _authMethods = AuthMethods();
   Database _database = new Database();
   bool loading = false;
-  TextEditingController userName = new TextEditingController();
-  TextEditingController email = new TextEditingController();
+  TextEditingController userNameController = new TextEditingController();
+  TextEditingController emailController = new TextEditingController();
   TextEditingController password = new TextEditingController();
   TextEditingController confirmPassword = new TextEditingController();
+  String userName;
+  QuerySnapshot _snapshot;
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -46,7 +50,7 @@ class _SignUpState extends State<SignUp> {
                         }
                         return null;
                       },
-                      controller: userName,
+                      controller: userNameController,
                       style: formTextStyle(),
                       decoration: textFields('username'),
                     ),
@@ -64,7 +68,7 @@ class _SignUpState extends State<SignUp> {
                         else
                           return null;
                       },
-                      controller: email,
+                      controller: emailController,
                       style: formTextStyle(),
                       decoration: textFields('email'),
                     ),
@@ -156,16 +160,20 @@ class _SignUpState extends State<SignUp> {
   }
 
   signUpUser() async {
-    await _database.createUsers(userName.text, email.text, password.text);
-    HelperFunctions.saveUser(true);
-
+    await _database.createUsers(userNameController.text, emailController.text, password.text);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('email', emailController.text);
     if (formKey.currentState.validate()) {
       setState(() {
         loading = true;
       });
-      HelperFunctions.saveUserName(userName.text);
-      HelperFunctions.saveEmail(email.text);
-      _authMethods.signUp(email.text, password.text).then((val) {
+      _database.getUserByEmail(emailController.text).then((val) {
+        _snapshot = val;
+        userName = val.documents[0].data['userName'].toString();
+        prefs.setString('userName', userName);
+      });
+
+      _authMethods.signUp(emailController.text, password.text).then((val) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
       });
     }

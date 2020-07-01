@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -5,8 +6,10 @@ import 'package:messaging/helperFunctions/helperFunctions.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
 import 'package:messaging/services/auth.dart';
+import 'package:messaging/services/database.dart';
 import 'package:messaging/views/chatrooms.dart';
 import 'package:messaging/views/signUp.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
   final title;
@@ -21,10 +24,14 @@ class _SignInState extends State<SignIn> {
   final emailController = new TextEditingController();
   final passwordController = new TextEditingController();
   AuthMethods _authMethods = new AuthMethods();
-  HelperFunctions _helperFunctions = new HelperFunctions();
+  Database _database = new Database();
+  QuerySnapshot _snapshot;
   bool loading = false;
   bool isLoggedIn = false;
   bool hide = true;
+  String email;
+  String userName;
+  String test;
   @override
   void initState() {
     super.initState();
@@ -32,27 +39,24 @@ class _SignInState extends State<SignIn> {
   }
 
   void isSignedIn() async {
-    setState(() {
-      loading = true;
-    });
-    await firebaseAuth.currentUser().then((user) {
-      if (user != null) {
-        setState(() => isLoggedIn = true);
-      }
-    });
-    if (isLoggedIn) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    email = prefs.getString('email');
+    print(email);
+    // await firebaseAuth.currentUser().then((user) {
+    //   if (user != null) {
+    //     setState(() => isLoggedIn = true);
+    //   }
+    // });
+    if (email.length > 0) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => new ChatRooms()));
     }
-    setState(() {
-      loading = false;
-    });
   }
 
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBarMain(context),
+      // appBar: appBarMain(context),
       body: Stack(
         children: <Widget>[
           Container(
@@ -148,20 +152,30 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  signInUser() {
-    HelperFunctions.saveEmail(emailController.text);
+  signInUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('email', emailController.text);
 
     if (formKey.currentState.validate()) {
       setState(() {
         loading = true;
       });
+      _database.getUserByEmail(emailController.text).then((val) {
+        _snapshot = val;
+        userName = val.documents[0].data['userName'].toString();
+        prefs.setString('userName', userName);
+        // test = prefs.getString('userName');
+        // print(test);
+      });
       _authMethods.signIn(emailController.text, passwordController.text).then((value) {
         if (value != null) {
-          HelperFunctions.saveUser(true);
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatRooms()));
         } else {
           Fluttertoast.showToast(msg: 'Wrong Email or Password');
         }
+        setState(() {
+          loading = false;
+        });
       }).catchError((e) => print(e.toString()));
     }
   }

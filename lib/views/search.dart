@@ -11,7 +11,7 @@ class SearchUser extends SearchDelegate<String> {
   @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return theme.copyWith(
+    return theme.copyWith(textTheme: TextTheme(headline6:TextStyle(color: Colors.white, fontSize: 17)),
       accentIconTheme: IconThemeData(color: greyColor),
       inputDecorationTheme: InputDecorationTheme(hintStyle: TextStyle(color: Colors.white)),
       primaryColor: greyColor,

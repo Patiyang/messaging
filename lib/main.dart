@@ -15,7 +15,10 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.white,
         cursorColor: Colors.white,
         accentColor: Colors.white,
-        appBarTheme: AppBarTheme(textTheme: TextTheme(headline6: TextStyle(color: Colors.white) ),
+        appBarTheme: AppBarTheme(
+          textTheme: TextTheme(
+            headline6: TextStyle(color: Colors.white, fontSize: 20,),
+          ),
           iconTheme: IconThemeData(color: Colors.white),
           color: greyColor,
         ),
