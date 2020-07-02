@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:messaging/helperFunctions/helperFunctions.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/helperWidgets/widget.dart';
@@ -23,7 +25,9 @@ class _SignUpState extends State<SignUp> {
   TextEditingController password = new TextEditingController();
   TextEditingController confirmPassword = new TextEditingController();
   String userName;
+  // ignore: unused_field
   QuerySnapshot _snapshot;
+  FirebaseAuth auth;
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -163,10 +167,17 @@ class _SignUpState extends State<SignUp> {
     await _database.createUsers(userNameController.text, emailController.text, password.text);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('email', emailController.text);
+
     if (formKey.currentState.validate()) {
       setState(() {
         loading = true;
       });
+      // if (auth. == emailController.text) {
+      //   setState(() {
+      //     loading = false;
+      //   });
+      //   Fluttertoast.showToast(msg: 'Email is already in use');
+      // }
       _database.getUserByEmail(emailController.text).then((val) {
         _snapshot = val;
         userName = val.documents[0].data['userName'].toString();

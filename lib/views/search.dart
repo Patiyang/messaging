@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:messaging/helperWidgets/styling.dart';
+import 'package:messaging/services/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'conversations.dart';
 
@@ -11,7 +13,8 @@ class SearchUser extends SearchDelegate<String> {
   @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return theme.copyWith(textTheme: TextTheme(headline6:TextStyle(color: Colors.white, fontSize: 17)),
+    return theme.copyWith(
+      textTheme: TextTheme(headline6: TextStyle(color: Colors.white, fontSize: 17)),
       accentIconTheme: IconThemeData(color: greyColor),
       inputDecorationTheme: InputDecorationTheme(hintStyle: TextStyle(color: Colors.white)),
       primaryColor: greyColor,
@@ -50,7 +53,9 @@ class SearchUser extends SearchDelegate<String> {
   Widget buildSuggestions(BuildContext context) {
     String users = 'users';
     String name = 'userName';
+    String sender = '';
     Firestore _firestore = Firestore.instance;
+    Database _database = new Database();
     return StreamBuilder(
       stream: _firestore.collection(users).orderBy(name).startAt([query]).endAt([query + '\uf8ff']).snapshots(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -67,7 +72,7 @@ class SearchUser extends SearchDelegate<String> {
           itemBuilder: (BuildContext context, int index) {
             DocumentSnapshot _snap = snapshot.data.documents[index];
             print(_snap.documentID);
-            String userName = _snap['userName'];
+            String recipient = _snap['userName'];
             String email = _snap['email'];
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
@@ -80,7 +85,7 @@ class SearchUser extends SearchDelegate<String> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        userName,
+                        recipient,
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     ],
@@ -90,13 +95,17 @@ class SearchUser extends SearchDelegate<String> {
                     style: TextStyle(color: Colors.white),
                   ),
                   trailing: MaterialButton(
+                    color: redColor,
                     textColor: greyColor,
                     child: Text('Message'),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
-                    onPressed: () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatScreen(recipent: userName)));
+                    onPressed: () async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      sender = prefs.getString('userName');
+                      String chatId = await getChatId(sender, recipient);
+                      await _database.createChatRoom(chatId, [sender, recipient]);
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatScreen(recipent: recipient)));
                     },
-                    color: redColor,
                   ),
                 ),
               ),
@@ -105,5 +114,13 @@ class SearchUser extends SearchDelegate<String> {
         );
       },
     );
+  }
+
+  getChatId(String a, String b) {
+    if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
+      return '$b\_$a';
+    } else {
+      return '$a\_$b';
+    }
   }
 }
