@@ -26,7 +26,7 @@ class HelperFunctions {
     return prefs.getBool(isLoggedIn);
   }
 
-  static Future<void> getUserName() async {
+  static Future<void> getUserName(String userName) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(userName);
   }
@@ -35,4 +35,8 @@ class HelperFunctions {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(email);
   }
+}
+
+class MyName {
+  static const String signedInUser = '';
 }

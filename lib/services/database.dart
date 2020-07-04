@@ -30,4 +30,15 @@ class Database {
         .document(chatId)
         .setData({'users': users, 'chatId': chatId}).catchError((e) => print(e.toString()));
   }
+
+  addConversations(String sender, String chatId, String message) async{
+   await _firestore.collection(chatRoom).document(chatId).collection('chats').add({
+      'sender': sender,
+      'message': message,
+    }).catchError((e) => print(e.toString()));
+  }
+
+  getConversations(String chatId) {
+   return _firestore.collection(chatRoom).document(chatId).collection('chats').snapshots();
+  }
 }

@@ -53,7 +53,7 @@ class SearchUser extends SearchDelegate<String> {
   Widget buildSuggestions(BuildContext context) {
     String users = 'users';
     String name = 'userName';
-    String sender = '';
+
     Firestore _firestore = Firestore.instance;
     Database _database = new Database();
     return StreamBuilder(
@@ -101,10 +101,11 @@ class SearchUser extends SearchDelegate<String> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
                     onPressed: () async {
                       SharedPreferences prefs = await SharedPreferences.getInstance();
-                      sender = prefs.getString('userName');
+                      String sender = prefs.getString('userName');
                       String chatId = await getChatId(sender, recipient);
                       await _database.createChatRoom(chatId, [sender, recipient]);
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ChatScreen(recipent: recipient)));
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder: (_) => ChatScreen(recipent: recipient, chatId: chatId, sender: sender)));
                     },
                   ),
                 ),
