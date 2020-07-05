@@ -16,8 +16,15 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final messageController = new TextEditingController();
   Database _database = new Database();
-  Stream chatStream;
-  Firestore _firestore = Firestore.instance;
+  String sender;
+  String date;
+  Stream getChats;
+  @override
+  void initState() {
+    super.initState();
+    getUserName();
+    getChats=_database.getConversations(widget.chatId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: <Widget>[
           StreamBuilder(
-            stream: _firestore.collection('chatRoom').document(widget.chatId).collection('chats').snapshots(),
+            stream:getChats,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               return snapshot.hasData
                   ? Expanded(
@@ -41,8 +48,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         itemBuilder: (BuildContext context, int index) {
                           DocumentSnapshot snap = snapshot.data.documents[index];
                           String message = snap['message'];
-                          String sender = snap['sender'];
-                          return MessageTiles(message, sender == sender);
+                          print(sender);
+                          return MessageTiles(message, snap['sender'] == sender);
                         },
                       ),
                     )
@@ -54,13 +61,13 @@ class _ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               Expanded(
                 child: Container(
-                  height: 40,
+                  height: 45,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
                     color: Colors.grey[700],
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 16.0, bottom: 2),
+                    padding: const EdgeInsets.only(left: 16.0, bottom: 3),
                     child: TextField(
                       maxLines: 4,
                       style: TextStyle(color: Colors.white),
@@ -78,14 +85,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 width: 2,
               ),
               MaterialButton(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                height: 40,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                height: 45,
                 color: redColor,
                 onPressed: () async {
                   await sendMessage();
                   messageController.clear();
                 },
-                child: Text('Send'),
+                child: Text(
+                  'Send',
+                  style: TextStyle(color: Colors.white, fontSize: 19),
+                ),
               )
             ],
           ),
@@ -94,10 +104,14 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  sendMessage() async {
+  getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String sender = prefs.getString('userName');
-    _database.addConversations(sender, widget.chatId, messageController.text);
+    sender = prefs.getString('userName');
+  }
+
+  sendMessage() async {
+    date = DateTime.now().millisecondsSinceEpoch.toString();
+    _database.addConversations(sender, widget.chatId, messageController.text, date);
   }
 }
 
@@ -107,15 +121,20 @@ class MessageTiles extends StatelessWidget {
   const MessageTiles(this.message, this.isMe);
   @override
   Widget build(BuildContext context) {
-    return Container(width: MediaQuery.of(context).size.width,
+    return Container(
+      width: 40,
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-        color: Colors.grey,
+      child: Container(
+        margin: isMe
+            ? EdgeInsets.only(right: 8, left: 50, top: 9, bottom: 2)
+            : EdgeInsets.only(left: 8, right: 50, top: 9, bottom: 2),
+        padding: EdgeInsets.symmetric(horizontal: 7, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          color: isMe ? Colors.red[600] : Colors.grey[350],
+        ),
+        child: Text(message, style: TextStyle(color: isMe ? Colors.white : Colors.black)),
       ),
-      margin: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
-      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 12),
-      child: Text(message, style: TextStyle(color: Colors.white)),
     );
   }
 }

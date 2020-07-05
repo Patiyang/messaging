@@ -74,6 +74,7 @@ class SearchUser extends SearchDelegate<String> {
             print(_snap.documentID);
             String recipient = _snap['userName'];
             String email = _snap['email'];
+
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
               child: Material(
@@ -100,6 +101,7 @@ class SearchUser extends SearchDelegate<String> {
                     child: Text('Message'),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
                     onPressed: () async {
+                      print('the recipient is '+recipient);
                       SharedPreferences prefs = await SharedPreferences.getInstance();
                       String sender = prefs.getString('userName');
                       String chatId = await getChatId(sender, recipient);

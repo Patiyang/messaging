@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Database {
   Firestore _firestore = Firestore.instance;
@@ -31,14 +32,22 @@ class Database {
         .setData({'users': users, 'chatId': chatId}).catchError((e) => print(e.toString()));
   }
 
-  addConversations(String sender, String chatId, String message) async{
-   await _firestore.collection(chatRoom).document(chatId).collection('chats').add({
-      'sender': sender,
-      'message': message,
-    }).catchError((e) => print(e.toString()));
+  addConversations(String sender, String chatId, String message, String time) async {
+    await _firestore
+        .collection(chatRoom)
+        .document(chatId)
+        .collection('chats')
+        .add({'sender': sender, 'message': message, 'time': time}).catchError((e) => print(e.toString()));
   }
 
   getConversations(String chatId) {
-   return _firestore.collection(chatRoom).document(chatId).collection('chats').snapshots();
+    return _firestore.collection(chatRoom).document(chatId).collection('chats').orderBy('time', descending: true).snapshots();
+  }
+
+  getChatLists(String userName) async {
+    String userName;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userName = prefs.getString('userName');
+    return _firestore.collection(chatRoom).where('users', arrayContains: userName).snapshots();
   }
 }
