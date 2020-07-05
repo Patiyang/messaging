@@ -16,16 +16,15 @@ class ChatRooms extends StatefulWidget {
 class _ChatScreenState extends State<ChatRooms> {
   AuthMethods _authMethods = AuthMethods();
   String email = '';
-  String userName = '';
+  String userName;
   String recipient;
-  Stream conversations;
+  Stream chatLists;
   Database database = new Database();
   Firestore _firestore = Firestore.instance;
   @override
   void initState() {
     super.initState();
     getUserName();
-    database.getChatLists(userName);
   }
 
   @override
@@ -35,7 +34,6 @@ class _ChatScreenState extends State<ChatRooms> {
       child: Scaffold(
         appBar: AppBar(
           elevation: 0,
-          // backgroundColor: Colors.grey[400],
           leading: Image.asset('images/lg.png', height: 50),
           automaticallyImplyLeading: false,
           centerTitle: true,
@@ -65,14 +63,14 @@ class _ChatScreenState extends State<ChatRooms> {
         ),
         body: Container(
           child: StreamBuilder(
-            stream: _firestore.collection('chatRoom').where('users', arrayContains: userName).snapshots(),
+            stream: chatLists,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               return snapshot.hasData
                   ? ListView.builder(
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (BuildContext context, int index) {
                         DocumentSnapshot snap = snapshot.data.documents[index];
-                        recipient = snap['chatId'].replaceAll(userName,'');
+                        recipient = snap['chatId'].replaceAll(userName, '');
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3.0),
                           child: Material(
@@ -113,5 +111,7 @@ class _ChatScreenState extends State<ChatRooms> {
   getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userName = prefs.getString('userName');
+    print(userName);
+    chatLists = database.getChatLists(userName);
   }
 }

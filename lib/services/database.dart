@@ -44,10 +44,7 @@ class Database {
     return _firestore.collection(chatRoom).document(chatId).collection('chats').orderBy('time', descending: true).snapshots();
   }
 
-  getChatLists(String userName) async {
-    String userName;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    userName = prefs.getString('userName');
+  getChatLists(String userName) {
     return _firestore.collection(chatRoom).where('users', arrayContains: userName).snapshots();
   }
 }

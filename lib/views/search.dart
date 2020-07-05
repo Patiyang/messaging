@@ -121,9 +121,9 @@ class SearchUser extends SearchDelegate<String> {
 
   getChatId(String a, String b) {
     if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
-      return '$b\_$a';
+      return '$b$a';
     } else {
-      return '$a\_$b';
+      return '$a$b';
     }
   }
 }
