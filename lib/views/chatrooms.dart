@@ -20,7 +20,6 @@ class _ChatScreenState extends State<ChatRooms> {
   String recipient;
   Stream chatLists;
   Database database = new Database();
-  Firestore _firestore = Firestore.instance;
   @override
   void initState() {
     super.initState();
@@ -73,28 +72,31 @@ class _ChatScreenState extends State<ChatRooms> {
                         recipient = snap['chatId'].replaceAll(userName, '');
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                          child: Material(
-                            color: Colors.grey[700],
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                            child: ListTile(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => ChatScreen(
-                                              chatId: snap['chatId'],
-                                              recipent: recipient,
-                                              sender: userName,
-                                            )));
-                              },
-                              leading: CircleAvatar(
-                                backgroundColor: redColor,
-                                child: Text(
-                                  recipient.substring(0, 1).toUpperCase(),
-                                  style: TextStyle(color: greyColor),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top:2.0, bottom: 1),
+                            child: Material(
+                              color: Colors.grey[700],
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                              child: ListTile(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => ChatScreen(
+                                                chatId: snap['chatId'],
+                                                recipent: recipient,
+                                                sender: userName,
+                                              )));
+                                },
+                                leading: CircleAvatar(
+                                  backgroundColor: redColor,
+                                  child: Text(
+                                    recipient.substring(0, 1).toUpperCase(),
+                                    style: TextStyle(color: greyColor),
+                                  ),
                                 ),
+                                title: Text(recipient, style: TextStyle(color: Colors.white, letterSpacing: 1, fontSize: 20)),
                               ),
-                              title: Text(recipient, style: TextStyle(color: Colors.white, letterSpacing: 1, fontSize: 20)),
                             ),
                           ),
                         );
@@ -112,6 +114,6 @@ class _ChatScreenState extends State<ChatRooms> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userName = prefs.getString('userName');
     print(userName);
-    chatLists = database.getChatLists(userName);
+    chatLists = await database.getChatLists(userName);
   }
 }
