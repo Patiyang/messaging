@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/services/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'conversations.dart';
 
 class SearchUser extends SearchDelegate<String> {
-  @override
   String get searchFieldLabel => 'Search by UserName';
+  String lastWords;
+  SearchUser({this.lastWords});
   @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -100,7 +100,7 @@ class SearchUser extends SearchDelegate<String> {
                     child: Text('Message'),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
                     onPressed: () async {
-                      print('the recipient is '+recipient);
+                      print('the recipient is ' + recipient);
                       SharedPreferences prefs = await SharedPreferences.getInstance();
                       String sender = prefs.getString('userName');
                       String chatId = await getChatId(sender, recipient);

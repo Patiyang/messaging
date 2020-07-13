@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/services/auth.dart';
 import 'package:messaging/services/database.dart';
@@ -7,6 +10,9 @@ import 'package:messaging/views/conversations.dart';
 import 'package:messaging/views/search.dart';
 import 'package:messaging/views/signIn.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class ChatRooms extends StatefulWidget {
   @override
@@ -20,9 +26,23 @@ class _ChatScreenState extends State<ChatRooms> {
   String recipient;
   Stream chatLists;
   Database database = new Database();
+
+  //speech recognition variables
+  bool _hasSpeech = false;
+  double level = 0.0;
+  double minSoundLevel = 50000;
+  double maxSoundLevel = -50000;
+  String lastWords = "";
+  String lastError = "";
+  String lastStatus = "";
+  String _currentLocaleId = "";
+  List<LocaleName> _localeNames = [];
+  final SpeechToText speech = SpeechToText();
+
   @override
   void initState() {
     super.initState();
+    initSpeechState();
     getUserName();
   }
 
@@ -49,6 +69,19 @@ class _ChatScreenState extends State<ChatRooms> {
                   print(userName);
                 }),
             IconButton(
+                icon: Icon(Icons.mic, color: Colors.white),
+                onPressed: () {
+                  if (speech.isListening) {
+                    return null;
+                  } else {
+                    startListening();
+                  }
+                  // showSearch(
+                  //   context: context,
+                  //   delegate: SearchUser(lastWords: lastWords),
+                  // );
+                }),
+            IconButton(
               icon: Icon(Icons.exit_to_app),
               onPressed: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -73,7 +106,7 @@ class _ChatScreenState extends State<ChatRooms> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3.0),
                           child: Padding(
-                            padding: const EdgeInsets.only(top:2.0, bottom: 1),
+                            padding: const EdgeInsets.only(top: 2.0, bottom: 1),
                             child: Material(
                               color: Colors.grey[700],
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -108,6 +141,82 @@ class _ChatScreenState extends State<ChatRooms> {
         ),
       ),
     );
+  }
+
+  Future<void> initSpeechState() async {
+    bool hasSpeech = await speech.initialize(onError: errorListener, onStatus: statusListener);
+    if (hasSpeech) {
+      _localeNames = await speech.locales();
+
+      var systemLocale = await speech.systemLocale();
+      _currentLocaleId = systemLocale.localeId;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _hasSpeech = hasSpeech;
+    });
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    print("Received error status: $error, listening: ${speech.isListening}");
+    setState(() {
+      lastError = "${error.errorMsg} - ${error.permanent}";
+    });
+  }
+
+  void statusListener(String status) {
+    print("Received listener status: $status, listening: ${speech.isListening}");
+    setState(() {
+      lastStatus = "$status";
+      print('the last words are' + lastWords);
+    });
+  }
+
+  void startListening() {
+    lastWords = "";
+    lastError = "";
+    speech.listen(
+        onResult: resultListener,
+        listenFor: Duration(seconds: 20),
+        localeId: 'English',
+        onSoundLevelChange: soundLevelListener,
+        cancelOnError: true,
+        partialResults: true,
+        onDevice: true,
+        listenMode: ListenMode.confirmation);
+    setState(() {});
+  }
+
+  void stopListening() {
+    speech.stop();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
+  void cancelListening() {
+    speech.cancel();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
+  void resultListener(SpeechRecognitionResult result) {
+    setState(() {
+      lastWords = "${result.recognizedWords} - ${result.finalResult}";
+      print('the last words are' + lastWords);
+    });
+  }
+
+  void soundLevelListener(double level) {
+    minSoundLevel = min(minSoundLevel, level);
+    maxSoundLevel = max(maxSoundLevel, level);
+    // print("sound level $level: $minSoundLevel - $maxSoundLevel ");
+    setState(() {
+      this.level = level;
+    });
   }
 
   getUserName() async {
