@@ -41,11 +41,6 @@ class _SignInState extends State<SignIn> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email');
     print(email);
-    // await firebaseAuth.currentUser().then((user) {
-    //   if (user != null) {
-    //     setState(() => isLoggedIn = true);
-    //   }
-    // });
     if (email.length > 0) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => new ChatRooms()));
     }
@@ -55,7 +50,6 @@ class _SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: appBarMain(context),
       body: Stack(
         children: <Widget>[
           Container(

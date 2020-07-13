@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:messaging/helperWidgets/styling.dart';
 import 'package:messaging/services/auth.dart';
 import 'package:messaging/services/database.dart';
@@ -42,7 +41,6 @@ class _ChatScreenState extends State<ChatRooms> {
   @override
   void initState() {
     super.initState();
-    initSpeechState();
     getUserName();
   }
 
@@ -69,17 +67,9 @@ class _ChatScreenState extends State<ChatRooms> {
                   print(userName);
                 }),
             IconButton(
-                icon: Icon(Icons.mic, color: Colors.white),
+                icon: Icon(Icons.settings_voice),
                 onPressed: () {
-                  if (speech.isListening) {
-                    return null;
-                  } else {
-                    startListening();
-                  }
-                  // showSearch(
-                  //   context: context,
-                  //   delegate: SearchUser(lastWords: lastWords),
-                  // );
+                  initSpeechState().then((value) => _showDialog);
                 }),
             IconButton(
               icon: Icon(Icons.exit_to_app),
@@ -143,6 +133,38 @@ class _ChatScreenState extends State<ChatRooms> {
     );
   }
 
+  void _showDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+            content: Container(
+              height: 200,
+              width: 340,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.mic, color: Colors.white),
+                    onPressed: !_hasSpeech || speech.isListening ? null : startListening,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.mic_off, color: Colors.white),
+                    onPressed: speech.isListening ? stopListening : null,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.cancel, color: Colors.white),
+                    onPressed: speech.isListening ? cancelListening : null,
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  ///these are the methods for voice search i.e speech to text functionality
   Future<void> initSpeechState() async {
     bool hasSpeech = await speech.initialize(onError: errorListener, onStatus: statusListener);
     if (hasSpeech) {
@@ -170,10 +192,10 @@ class _ChatScreenState extends State<ChatRooms> {
     print("Received listener status: $status, listening: ${speech.isListening}");
     setState(() {
       lastStatus = "$status";
-      print('the last words are' + lastWords);
     });
   }
 
+//the three widgets below will be used in the dialog
   void startListening() {
     lastWords = "";
     lastError = "";
@@ -203,10 +225,10 @@ class _ChatScreenState extends State<ChatRooms> {
     });
   }
 
+//the methods funciton to give the results of speech transcribed to text and volume control
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
       lastWords = "${result.recognizedWords} - ${result.finalResult}";
-      print('the last words are' + lastWords);
     });
   }
 

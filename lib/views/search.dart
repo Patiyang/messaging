@@ -7,8 +7,8 @@ import 'conversations.dart';
 
 class SearchUser extends SearchDelegate<String> {
   String get searchFieldLabel => 'Search by UserName';
-  String lastWords;
-  SearchUser({this.lastWords});
+  String voiceSearch;
+  SearchUser({this.voiceSearch});
   @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);
