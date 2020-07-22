@@ -24,7 +24,7 @@ class _SignInState extends State<SignIn> {
   final passwordController = new TextEditingController();
   AuthMethods _authMethods = new AuthMethods();
   Database _database = new Database();
-  QuerySnapshot _snapshot;
+  QuerySnapshot snapshot;
   bool loading = false;
   bool isLoggedIn = false;
   bool hide = true;
@@ -154,7 +154,7 @@ class _SignInState extends State<SignIn> {
         loading = true;
       });
       _database.getUserByEmail(emailController.text).then((val) {
-        _snapshot = val;
+        snapshot = val;
         userName = val.documents[0].data['userName'].toString();
         prefs.setString('userName', userName);
         // test = prefs.getString('userName');

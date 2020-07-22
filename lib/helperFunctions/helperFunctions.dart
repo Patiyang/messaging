@@ -37,6 +37,3 @@ class HelperFunctions {
   }
 }
 
-class MyName {
-  static const String signedInUser = '';
-}

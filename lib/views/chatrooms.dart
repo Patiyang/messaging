@@ -1,8 +1,8 @@
 import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:messaging/helperWidgets/styling.dart';
+import 'package:messaging/helperWidgets/widget.dart';
 import 'package:messaging/services/auth.dart';
 import 'package:messaging/services/database.dart';
 import 'package:messaging/views/conversations.dart';
@@ -25,7 +25,7 @@ class _ChatScreenState extends State<ChatRooms> {
   String recipient;
   Stream chatLists;
   Database database = new Database();
-
+  StateSetter _stateSetter;
   //speech recognition variables
   bool _hasSpeech = false;
   double level = 0.0;
@@ -68,8 +68,9 @@ class _ChatScreenState extends State<ChatRooms> {
                 }),
             IconButton(
                 icon: Icon(Icons.settings_voice),
-                onPressed: () {
-                  initSpeechState().then((value) => _showDialog);
+                onPressed: () async {
+                  await initSpeechState();
+                  _showDialog();
                 }),
             IconButton(
               icon: Icon(Icons.exit_to_app),
@@ -134,32 +135,123 @@ class _ChatScreenState extends State<ChatRooms> {
   }
 
   void _showDialog() {
+//     showDialog(
+//   context: context,
+//   builder: (context) {
+//     String contentText = "Content of Dialog";
+//     return StatefulBuilder(
+//       builder: (context, setState) {
+//         return AlertDialog(
+//           title: Text("Title of Dialog"),
+//           content: Text(contentText),
+//           actions: <Widget>[
+//             FlatButton(
+//               onPressed: () => Navigator.pop(context),
+//               child: Text("Cancel"),
+//             ),
+//             FlatButton(
+//               onPressed: () {
+//                 setState(() {
+//                   contentText = "Changed Content of Dialog";
+//                 });
+//               },
+//               child: Text("Change"),
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   },
+// );
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-            content: Container(
-              height: 200,
-              width: 340,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.mic, color: Colors.white),
-                    onPressed: !_hasSpeech || speech.isListening ? null : startListening,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.mic_off, color: Colors.white),
-                    onPressed: speech.isListening ? stopListening : null,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.cancel, color: Colors.white),
-                    onPressed: speech.isListening ? cancelListening : null,
-                  )
-                ],
-              ),
-            ),
+          String start = 'Start';
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              _stateSetter = setState;
+              return AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                  content: Container(
+                    height: 200,
+                    width: 340,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            Column(
+                              children: <Widget>[
+                                IconButton(
+                                    icon: Icon(
+                                      Icons.mic,
+                                    ),
+                                    onPressed: () async {
+                                      if (!_hasSpeech || speech.isListening) {
+                                        return null;
+                                      } else {
+                                        await startListening();
+                                        setState(() {
+                                        });
+                                      }
+                                    }),
+                                CustomText(text: start)
+                              ],
+                            ),
+                            Column(
+                              children: <Widget>[
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.mic_off,
+                                  ),
+                                  onPressed: speech.isListening ? stopListening : null,
+                                ),
+                                CustomText(text: 'Stop')
+                              ],
+                            ),
+                            Column(
+                              children: <Widget>[
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.cancel,
+                                  ),
+                                  onPressed: speech.isListening ? cancelListening : null,
+                                ),
+                                CustomText(text: 'Cancel')
+                              ],
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 17.0),
+                                child: DropdownButton(
+                                  icon: Icon(Icons.language),
+                                  dropdownColor: greyColor,
+                                  isExpanded: true,
+                                  style: TextStyle(color: Colors.white),
+                                  onChanged: (selectedVal) => _switchLang(selectedVal),
+                                  value: _currentLocaleId,
+                                  items: _localeNames
+                                      .map(
+                                        (localeName) => DropdownMenuItem(
+                                          value: localeName.localeId,
+                                          child: Text(localeName.name),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ));
+            },
           );
         });
   }
@@ -195,40 +287,42 @@ class _ChatScreenState extends State<ChatRooms> {
     });
   }
 
-//the three widgets below will be used in the dialog
-  void startListening() {
+//the three methods below will be used in the dialog
+  startListening() {
     lastWords = "";
     lastError = "";
     speech.listen(
         onResult: resultListener,
         listenFor: Duration(seconds: 20),
-        localeId: 'English',
+        localeId: _currentLocaleId,
         onSoundLevelChange: soundLevelListener,
         cancelOnError: true,
         partialResults: true,
         onDevice: true,
         listenMode: ListenMode.confirmation);
-    setState(() {});
   }
 
-  void stopListening() {
+  stopListening() {
     speech.stop();
     setState(() {
+      // SearchUser(voiceSearch: lastWords);
       level = 0.0;
     });
   }
 
-  void cancelListening() {
+  cancelListening() {
     speech.cancel();
     setState(() {
       level = 0.0;
     });
+    Navigator.pop(context);
   }
 
 //the methods funciton to give the results of speech transcribed to text and volume control
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
       lastWords = "${result.recognizedWords} - ${result.finalResult}";
+      print('the last words are $lastWords');
     });
   }
 
@@ -241,10 +335,18 @@ class _ChatScreenState extends State<ChatRooms> {
     });
   }
 
+  _switchLang(selectedVal) {
+    setState(() {
+      _currentLocaleId = selectedVal;
+    });
+    print(selectedVal);
+  }
+
   getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userName = prefs.getString('userName');
     print(userName);
     chatLists = await database.getChatLists(userName);
+    setState(() {});
   }
 }
