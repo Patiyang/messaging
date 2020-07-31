@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'conversations.dart';
 
 class SearchUser extends SearchDelegate<String> {
+  
   String get searchFieldLabel => 'Search by UserName';
   String voiceSearch;
   SearchUser({this.voiceSearch});
@@ -25,6 +26,7 @@ class SearchUser extends SearchDelegate<String> {
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
+      IconButton(icon: Icon(Icons.settings_voice, color: Colors.white,), onPressed: null),
       IconButton(
         icon: Icon(Icons.clear),
         onPressed: () {

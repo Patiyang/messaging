@@ -9,9 +9,20 @@ Widget appBarMain(BuildContext context) {
 }
 
 class Loading extends StatelessWidget {
+  final String text;
+  final Color color;
+  const Loading({Key key, this.text, this.color}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Center(child: CircularProgressIndicator());
+    return Center(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        CircularProgressIndicator(),
+        SizedBox(height: 10),
+        Text(text, style: TextStyle(color: color ?? Colors.white))
+      ],
+    ));
   }
 }
 
@@ -23,6 +34,6 @@ class CustomText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: TextStyle(color:color ?? Colors.white));
+    return Text(text, style: TextStyle(color: color ?? Colors.white));
   }
 }
